@@ -1,7 +1,7 @@
 from datetime import datetime
 import json
 
-from src.services.types import TransactionsSummary
+from types import TransactionsSummary
 from src.connections import redis_client
 
 
