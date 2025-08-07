@@ -1,22 +1,23 @@
+import asyncio
 from contextlib import asynccontextmanager
 import json
 
 from fastapi import FastAPI, Response, Query
-from dramatiq.brokers.redis import RedisBroker
-import dramatiq
 
-from models.payment import Payment
-from services.process_payment import payment_service
-from services.summary import summary_service
-from connections import redis_client, request_client
+import src.broker  # noqa: F401
+from src.models.payment import Payment
+from src.services.process_payment import payment_service
+from src.services.summary import summary_service
+from src.entrypoints.health_check import queue_health_check_every_5_seconds
+from src.connections import redis_client, request_client
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
     await redis_client.flushdb(asynchronous=False) # pyright: ignore[reportUnknownMemberType]
     await redis_client.set("processor", "default")
-    broker = RedisBroker(host="localhost", port=6379)
-    dramatiq.set_broker(broker)
+    loop = asyncio.get_running_loop()
+    loop.create_task(queue_health_check_every_5_seconds())
 
     yield
 

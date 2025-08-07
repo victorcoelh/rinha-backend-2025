@@ -1,14 +1,18 @@
+import logging
 import json
 from datetime import datetime, timezone
 from typing import Any
 
 import dramatiq
 
-from models.processor import Processor
-from connections import redis_client, request_client
+from src.models.processor import Processor
+from src.connections import redis_client, request_client
+
+httpx_logger = logging.getLogger("httpx")
+httpx_logger.setLevel(logging.WARNING)
 
 
-@dramatiq.actor
+@dramatiq.actor(min_backoff=500, max_backoff=2000, max_retries=3)
 async def payment_service(payment_body: dict[str, Any]) -> None:
     payment_body["requestedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f") + "Z"
     processor_type: bytes = await redis_client.get("processor")

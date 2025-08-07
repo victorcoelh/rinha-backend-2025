@@ -7,7 +7,6 @@ requires-python = ">=3.12"
 dependencies = [
     "asyncio>=3.4.3",
     "dramatiq[redis,watch]>=1.18.0",
-    "fastapi[standard]>=0.116.1",
     "httpx>=0.28.1",
     "redis[hiredis]>=6.2.0",
 ]
@@ -15,3 +14,9 @@ dependencies = [
 [tool.pyright]
 include = ["src/"]
 typeCheckingMode = "standard"
+
+[dependency-groups]
+server = [
+    "fastapi>=0.116.1",
+    "granian>=2.5.0",
+]

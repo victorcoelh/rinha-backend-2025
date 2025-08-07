@@ -84,12 +84,6 @@ services:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - postgres-socket-02:/var/run/postgresql
 
-  redis:
-    hostname: redis
-    image: redis:alpine
-    ports:
-      - 6379:6379
-
 networks:
   payment-processor:
     name: payment-processor

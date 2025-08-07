@@ -8,6 +8,6 @@ class Processor(StrEnum):
     def get_processor(self) -> str:
         match self:
             case Processor.DEFAULT:
-                return "http://localhost:8001/payments"
+                return "http://payment-processor-default:8080/payments"
             case Processor.FALLBACK:
-                return "http://localhost:8002/payments"
+                return "http://payment-processor-fallback:8080/payments"

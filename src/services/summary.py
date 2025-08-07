@@ -1,8 +1,8 @@
 from datetime import datetime
 import json
 
-from utils.types import TransactionsSummary
-from connections import redis_client
+from src.services.types import TransactionsSummary
+from src.connections import redis_client
 
 
 async def summary_service(from_utc: str, to_utc: str) -> TransactionsSummary:
