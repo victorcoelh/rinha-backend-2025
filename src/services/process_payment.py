@@ -12,26 +12,27 @@ httpx_logger = logging.getLogger("httpx")
 httpx_logger.setLevel(logging.WARNING)
 
 
-@dramatiq.actor(min_backoff=500, max_backoff=2000, max_retries=3)
+@dramatiq.actor(min_backoff=100, max_backoff=100, max_retries=99)
 async def payment_service(payment_body: dict[str, Any]) -> None:
-    payment_body["requestedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f") + "Z"
     processor_type: bytes = await redis_client.get("processor")
     processor = Processor(processor_type.decode("utf-8"))
+
+    payment_body["processor"] = processor
+    payment_body["requestedAt"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f") + "Z"
 
     response = await request_client.post(processor.get_processor(), json=payment_body)
 
     if not response.is_success:
-        await invert_redis_client_processor()
+        await invert_redis_processor()
         response.raise_for_status()
 
-    payment_body["processor"] = processor
     await redis_client.rpush("transactions", json.dumps(payment_body)) # type: ignore
 
-async def invert_redis_client_processor() -> str:
+async def invert_redis_processor() -> str:
     processor_type: bytes = await redis_client.get("processor")
-    current_redis_client = processor_type.decode("utf-8")
+    current_processor = processor_type.decode("utf-8") # type: ignore
 
-    if current_redis_client == Processor.DEFAULT:
+    if current_processor == Processor.DEFAULT:
         await redis_client.set("processor", Processor.FALLBACK)
         return Processor.FALLBACK
     else:

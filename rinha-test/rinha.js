@@ -223,16 +223,16 @@ export async function checkPaymentsConsistency() {
     backendPaymentsSummaryPromise
   ]);
 
-  const inconsistencies =
-      Math.abs(
+  const relative_inconsistencies = (
         (backendPaymentsSummary.default.totalRequests - defaultAdminPaymentsSummary.totalRequests) +
         (backendPaymentsSummary.fallback.totalRequests - fallbackAdminPaymentsSummary.totalRequests)
-      );
+  )
 
+  const inconsistencies = Math.abs(relative_inconsistencies)
   paymentsInconsistencyCounter.add(inconsistencies);
 
   if (inconsistencies > 0) {
-    console.warn(`${inconsistencies} inconsistências encontradas.`);
+    console.warn(`${relative_inconsistencies} inconsistências encontradas.`);
   }
 
   sleep(10);

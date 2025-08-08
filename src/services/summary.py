@@ -1,7 +1,8 @@
+import asyncio
 from datetime import datetime
 import json
 
-from types import TransactionsSummary
+from src.types import TransactionsSummary
 from src.connections import redis_client
 
 
@@ -15,6 +16,9 @@ async def summary_service(from_utc: str, to_utc: str) -> TransactionsSummary:
         if within_range(transaction["requestedAt"], from_utc, to_utc):
             summary[transaction["processor"]]["totalRequests"] += 1
             summary[transaction["processor"]]["totalAmount"] += transaction["amount"]
+
+    for _, processor_data in summary.items():
+        processor_data["totalAmount"] = processor_data["totalAmount"]
 
     return summary
 
@@ -31,8 +35,8 @@ def initialize_summary_dict() -> dict[str, dict[str, int | float]]:
     }
 
 def within_range(time: str, from_utc: str, to_utc: str) -> bool:
-    transaction_date = datetime.strptime(time[:-2], "%Y-%m-%dT%H:%M:%S.%f")
-    start_date = datetime.strptime(from_utc[:-2], "%Y-%m-%dT%H:%M:%S.%f")
-    end_date = datetime.strptime(to_utc[:-2], "%Y-%m-%dT%H:%M:%S.%f")
+    transaction_date = datetime.strptime(time[:-1], "%Y-%m-%dT%H:%M:%S.%f")
+    start_date = datetime.strptime(from_utc[:-1], "%Y-%m-%dT%H:%M:%S.%f")
+    end_date = datetime.strptime(to_utc[:-1], "%Y-%m-%dT%H:%M:%S.%f")
 
     return start_date <= transaction_date <= end_date
