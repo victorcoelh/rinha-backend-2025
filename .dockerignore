@@ -1,0 +1,18 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore VCS
+.git
+.gitignore
+
+# Ignore local dependencies
+venv/
+.venv/
+.env
+
+# Ignore dev configs
+*.log
+*.md
+tests/

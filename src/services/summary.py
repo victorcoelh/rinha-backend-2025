@@ -1,12 +1,13 @@
-import asyncio
 from datetime import datetime
 import json
 
 from src.types import TransactionsSummary
-from src.connections import redis_client
+from src.connections import get_redis_client
 
 
 async def summary_service(from_utc: str, to_utc: str) -> TransactionsSummary:
+    redis_client = get_redis_client()
+
     transactions: list[bytes] = await redis_client.lrange("transactions", 0, -1) # type: ignore
     summary = initialize_summary_dict()
     

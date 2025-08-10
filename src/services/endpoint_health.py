@@ -1,11 +1,14 @@
 import dramatiq
 
-from src.connections import request_client, redis_client
+from src.connections import get_redis_client, get_request_client
 from src.models.processor import Processor
 
 
 @dramatiq.actor(max_retries=0)
 async def check_endpoint_health() -> None:
+    request_client = get_request_client()
+    redis_client = get_redis_client()
+    
     default_endpoint = Processor.DEFAULT.get_processor() + "/service-health"
     default_health = (await request_client.get(default_endpoint))
     
