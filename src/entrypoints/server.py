@@ -1,5 +1,3 @@
-import asyncio
-from contextlib import asynccontextmanager
 import json
 
 from fastapi import FastAPI, Response, Query
@@ -8,27 +6,8 @@ import src.broker  # noqa: F401
 from src.models.payment import Payment
 from src.services.process_payment import payment_service
 from src.services.summary import summary_service
-from src.entrypoints.health_check import queue_health_check_every_5_seconds
-from src.connections import get_redis_client, get_request_client
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup
-    redis_client = get_redis_client()
-    request_client = get_request_client()
-    
-    await redis_client.flushdb(asynchronous=False) # pyright: ignore[reportUnknownMemberType]
-    await redis_client.set("processor", "default")
-    loop = asyncio.get_running_loop()
-    loop.create_task(queue_health_check_every_5_seconds())
-
-    yield
-
-    # Shutdown
-    await request_client.aclose()
-    await redis_client.close()
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 
 @app.get("/payments-summary")
