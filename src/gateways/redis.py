@@ -1,9 +1,6 @@
 from redis.asyncio import Redis
 
-import httpx
-
 _redis_client = None
-_request_client = None
 
 
 def get_redis_client() -> Redis:
@@ -18,9 +15,3 @@ def get_redis_client() -> Redis:
         )
 
     return _redis_client
-
-def get_request_client() -> httpx.AsyncClient:
-    global _request_client
-    if _request_client is None:
-        _request_client = httpx.AsyncClient(timeout=None)
-    return _request_client

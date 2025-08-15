@@ -6,7 +6,7 @@ from fastapi.responses import ORJSONResponse
 from starlette.requests import Request as StarletteRequest
 import orjson
 
-from src.async_queue import AsyncQueue
+from src.async_queue.async_queue import AsyncQueue
 from src.services.summary import summary_service
 
 uvloop.install()

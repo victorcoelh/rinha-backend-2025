@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 
 from src.types import TransactionsSummary
-from src.connections import get_redis_client
+from src.gateways.requests import get_redis_client
 
 
 async def summary_service(from_utc: str, to_utc: str) -> TransactionsSummary:

@@ -1,8 +1,8 @@
 import asyncio
 from asyncio.tasks import Task
-from src.async_queue import AsyncQueue
+from src.async_queue.async_queue import AsyncQueue
 
-from src.services.payment_service import process_payment
+from src.services.payment import process_payment
 
 
 class WorkerPool:

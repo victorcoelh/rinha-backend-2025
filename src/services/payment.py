@@ -1,8 +1,9 @@
 import json
 from datetime import datetime, timezone
 
-from src.models.processor import Processor
-from src.connections import get_redis_client, get_request_client
+from src.gateways.processor import Processor
+from src.gateways.requests import get_request_client
+from src.gateways.redis import get_redis_client
 from src.types import Payment
 
 
