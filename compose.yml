@@ -1,20 +1,50 @@
 x-base-service: &fastapi-server
   build:
     context: ./
-    dockerfile: ./docker/server/Dockerfile
+    dockerfile: ./docker/Dockerfile
   environment:
     REDIS_URL: redis://redis:6379/0
   networks:
     - default
+    - payment-processor
   expose:
     - "8000"
-  deploy:
-    resources:
-      limits:
-        cpus: "0.25"
-        memory: 100M
+  entrypoint: ["granian", "--interface", "asgi", "src.entrypoints.server:app", "--host", "0.0.0.0"]
+  command: ["--workers", "1", "--runtime-threads", "1", "--loop", "uvloop"]
 
 services:
+  web-server-1:
+    <<: *fastapi-server
+    container_name: fastapi-1
+    deploy:
+      resources:
+        limits:
+          cpus: "0.35"
+          memory: 80M
+
+  web-server-2:
+    <<: *fastapi-server
+    container_name: fastapi-2
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 80M
+
+  workers:
+    <<: *fastapi-server
+    container_name: workers
+    depends_on:
+      - redis
+      - web-server-1
+      - web-server-2
+    entrypoint: ["dramatiq", "src.entrypoints.worker"]
+    command: ["--processes", "2", "--threads", "8"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 115M
   nginx:
     image: nginx:latest
     container_name: nginx
@@ -33,47 +63,26 @@ services:
           cpus: "0.1"
           memory: 25M
 
-  web-server-1:
-    <<: *fastapi-server
-    container_name: fastapi-1
-
-  web-server-2:
-    <<: *fastapi-server
-    container_name: fastapi-2
-
-  workers:
-    build:
-      context: ./
-      dockerfile: ./docker/worker/Dockerfile
-    depends_on:
-      - redis
-      - web-server-1
-      - web-server-2
-    environment:
-      REDIS_URL: redis://redis:6379/0
-    networks:
-      - default
-      - payment-processor
-    deploy:
-      resources:
-        limits:
-          cpus: "0.8"
-          memory: 105M
-
   redis:
     container_name: redis
     image: redis:7.2-alpine
-    command:
-      - redis-server
-      - --save ""
-      - --tcp-backlog 511
+    command: >
+      redis-server
+      --maxclients 500
+      --save ""
+      --tcp-backlog 511
+      --appendonly no
+      --jemalloc-bg-thread yes
+      --client-output-buffer-limit normal 0 0 0
     expose:
       - "6379"
+    sysctls:
+      - net.core.somaxconn=1024
     deploy:
       resources:
         limits:
           cpus: "0.1"
-          memory: 20M
+          memory: 50M
 
 networks:
   default:

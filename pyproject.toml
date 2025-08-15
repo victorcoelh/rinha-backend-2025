@@ -8,7 +8,9 @@ dependencies = [
     "asyncio>=3.4.3",
     "dramatiq[redis,watch]>=1.18.0",
     "httpx>=0.28.1",
+    "orjson>=3.11.2",
     "redis[hiredis]>=6.2.0",
+    "uvloop>=0.21.0",
 ]
 
 [tool.pyright]
