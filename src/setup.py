@@ -12,7 +12,7 @@ uvloop.install()
 httpx_logger = logging.getLogger("httpx")
 httpx_logger.setLevel(logging.WARNING)
 logging.basicConfig(level=logging.INFO)
-    
+
 
 async def initialize_worker_pool_and_jobs(queue: AsyncQueue, num_workers: int) -> WorkerPool:
     pool = WorkerPool(queue, num_workers)
@@ -21,8 +21,7 @@ async def initialize_worker_pool_and_jobs(queue: AsyncQueue, num_workers: int) -
     loop = asyncio.get_running_loop()
     loop.create_task(flush_redis_db())
     loop.create_task(health_check_scheduler())
-    
-    logging.info("Initialized worker pool")
+
     return pool
 
 async def flush_redis_db():

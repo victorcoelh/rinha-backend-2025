@@ -298,12 +298,6 @@ dependencies = [
     { name = "uvloop" },
 ]
 
-[package.dev-dependencies]
-server = [
-    { name = "fastapi" },
-    { name = "granian" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "asyncio", specifier = ">=3.4.3" },
@@ -313,12 +307,6 @@ requires-dist = [
     { name = "orjson", specifier = ">=3.11.2" },
     { name = "redis", extras = ["hiredis"], specifier = ">=6.2.0" },
     { name = "uvloop", specifier = ">=0.21.0" },
-]
-
-[package.metadata.requires-dev]
-server = [
-    { name = "fastapi", specifier = ">=0.116.1" },
-    { name = "granian", specifier = ">=2.5.0" },
 ]
 
 [[package]]

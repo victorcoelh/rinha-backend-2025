@@ -14,7 +14,7 @@ job_queue = AsyncQueue()
 
 @asynccontextmanager
 async def fastapi_lifespan(app: FastAPI):
-    worker_pool = await initialize_worker_pool_and_jobs(job_queue, 32)
+    worker_pool = await initialize_worker_pool_and_jobs(job_queue, 8)
     yield
     await worker_pool.stop()
 

@@ -23,9 +23,8 @@ class WorkerPool:
         await asyncio.gather(*self._workers, return_exceptions=True)
 
     async def _worker(self) -> None:
-        payment = await self._queue.get()
-        print("Got payment")
+        while True:
+            payment = await self._queue.get()
 
-        if await process_payment(payment):
-            print("Payment processing failed")
-            await self._queue.put(payment)
+            if await process_payment(payment):
+                await self._queue.put(payment)

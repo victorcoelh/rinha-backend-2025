@@ -1,20 +1,25 @@
 import asyncio
+
+from redis.asyncio import Redis
 from src.gateways.processor import Processor
 from src.gateways.redis import get_redis_client
 from src.gateways.requests import get_request_client
 
-LOCK_KEY = "healthcheck_scheduler_lock"
-LOCK_TTL = 10  # seconds
-
 
 async def health_check_scheduler():
-    while True:
-        await check_processor_health()
-        await asyncio.sleep(5.5)
-
-async def check_processor_health() -> None:
-    request_client = get_request_client()
     redis_client = get_redis_client()
+
+    while True:
+        await asyncio.sleep(1.5)
+
+        processor_type: bytes = await redis_client.get("processor")
+        current_processor = processor_type.decode("utf-8") # type: ignore
+        
+        if current_processor == Processor.FALLBACK:
+            await check_processor_health(redis_client)
+
+async def check_processor_health(redis_client: Redis) -> None:
+    request_client = get_request_client()
     
     default_endpoint = Processor.DEFAULT.get_processor() + "/service-health"
     default_health = (await request_client.get(default_endpoint))
