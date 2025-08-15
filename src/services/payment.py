@@ -7,7 +7,7 @@ from src.gateways.redis import get_redis_client
 from src.types import Payment
 
 
-async def process_payment(payment: Payment) -> None:
+async def process_payment(payment: Payment) -> Payment | None:
     redis_client = get_redis_client()
     request_client = get_request_client()
     
@@ -21,9 +21,10 @@ async def process_payment(payment: Payment) -> None:
 
     if not response.is_success:
         await invert_redis_processor()
-        response.raise_for_status()
+        return payment
 
     await redis_client.rpush("transactions", json.dumps(payment)) # type: ignore
+    return None
 
 async def invert_redis_processor() -> str:
     redis_client = get_redis_client()

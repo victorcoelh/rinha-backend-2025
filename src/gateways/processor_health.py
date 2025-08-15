@@ -7,29 +7,12 @@ LOCK_KEY = "healthcheck_scheduler_lock"
 LOCK_TTL = 10  # seconds
 
 
-async def _endpoint_health_check():
+async def health_check_scheduler():
     while True:
-        ##add to job queue
+        await check_processor_health()
         await asyncio.sleep(5.5)
-        
-async def _redis_flush():
-    redis_client = get_redis_client()
-    await redis_client.flushdb(asynchronous=True) # type: ignore
-    await redis_client.set("processor", "default") # type: ignore
 
-async def startup_actor():
-    loop = asyncio.get_running_loop()
-
-    redis = get_redis_client()
-    acquired = await redis.set(LOCK_KEY, "1", nx=True, ex=LOCK_TTL)  # type: ignore
-
-    if not acquired:
-        return
-
-    loop.create_task(_endpoint_health_check())
-    loop.create_task(_redis_flush())
-
-async def check_endpoint_health() -> None:
+async def check_processor_health() -> None:
     request_client = get_request_client()
     redis_client = get_redis_client()
     

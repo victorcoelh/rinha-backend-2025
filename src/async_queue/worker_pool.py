@@ -6,7 +6,7 @@ from src.services.payment import process_payment
 
 
 class WorkerPool:
-    def __init__(self, num_workers: int, queue: AsyncQueue) -> None:
+    def __init__(self, queue: AsyncQueue, num_workers: int) -> None:
         self._queue = queue
         self._workers: list[Task] = []
         self.num_workers = num_workers
@@ -24,4 +24,8 @@ class WorkerPool:
 
     async def _worker(self) -> None:
         payment = await self._queue.get()
-        await process_payment(payment)
+        print("Got payment")
+
+        if await process_payment(payment):
+            print("Payment processing failed")
+            await self._queue.put(payment)

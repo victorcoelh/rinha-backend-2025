@@ -1,5 +1,4 @@
-import logging
-import uvloop
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response, Query
 from fastapi.responses import ORJSONResponse
@@ -8,17 +7,19 @@ import orjson
 
 from src.async_queue.async_queue import AsyncQueue
 from src.services.summary import summary_service
+from src.setup import initialize_worker_pool_and_jobs, orjson_json
 
-uvloop.install()
-httpx_logger = logging.getLogger("httpx")
-httpx_logger.setLevel(logging.WARNING)
-work_queue = AsyncQueue()
+job_queue = AsyncQueue()
 
-async def orjson_json(self):
-    return orjson.loads(await self.body())
+
+@asynccontextmanager
+async def fastapi_lifespan(app: FastAPI):
+    worker_pool = await initialize_worker_pool_and_jobs(job_queue, 32)
+    yield
+    await worker_pool.stop()
+
 StarletteRequest.json = orjson_json
-
-app = FastAPI(default_response_class=ORJSONResponse)
+app = FastAPI(default_response_class=ORJSONResponse, lifespan=fastapi_lifespan)
 
 
 @app.get("/payments-summary")
@@ -29,5 +30,5 @@ async def get_payments_summary(from_utc: str = Query(alias="from"),
 
 @app.post("/payments")
 async def process_payment(request: Request) -> Response:
-    await work_queue.put(await request.json())
+    await job_queue.put(await request.json())
     return Response(status_code=200)

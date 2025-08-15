@@ -9,42 +9,24 @@ x-base-service: &fastapi-server
     - payment-processor
   expose:
     - "8000"
-  entrypoint: ["python", "-m", "granian", "--interface", "asgi", "src.entrypoints.server:app", "--host", "0.0.0.0"]
+  entrypoint: ["python", "-m", "granian", "--interface", "asgi", "src.server:app", "--host", "0.0.0.0"]
   command: ["--workers", "1", "--runtime-threads", "1", "--loop", "uvloop"]
+  deploy:
+    resources:
+      limits:
+        cpus: "0.6"
+        memory: 135M
 
 services:
   web-server-1:
     <<: *fastapi-server
     container_name: fastapi-1
-    deploy:
-      resources:
-        limits:
-          cpus: "0.35"
-          memory: 80M
+
 
   web-server-2:
     <<: *fastapi-server
     container_name: fastapi-2
-    deploy:
-      resources:
-        limits:
-          cpus: "0.2"
-          memory: 80M
 
-  workers:
-    <<: *fastapi-server
-    container_name: workers
-    depends_on:
-      - redis
-      - web-server-1
-      - web-server-2
-    entrypoint: ["python", "-m", "dramatiq", "src.entrypoints.worker"]
-    command: ["--processes", "2", "--threads", "8"]
-    deploy:
-      resources:
-        limits:
-          cpus: "0.75"
-          memory: 115M
   nginx:
     image: nginx:latest
     container_name: nginx
@@ -60,8 +42,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.1"
-          memory: 25M
+          cpus: "0.15"
+          memory: 30M
 
   redis:
     container_name: redis
@@ -81,7 +63,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.1"
+          cpus: "0.15"
           memory: 50M
 
 networks:
