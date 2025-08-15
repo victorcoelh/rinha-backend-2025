@@ -9,7 +9,7 @@ x-base-service: &fastapi-server
     - payment-processor
   expose:
     - "8000"
-  entrypoint: ["granian", "--interface", "asgi", "src.entrypoints.server:app", "--host", "0.0.0.0"]
+  entrypoint: ["python", "-m", "granian", "--interface", "asgi", "src.entrypoints.server:app", "--host", "0.0.0.0"]
   command: ["--workers", "1", "--runtime-threads", "1", "--loop", "uvloop"]
 
 services:
@@ -38,7 +38,7 @@ services:
       - redis
       - web-server-1
       - web-server-2
-    entrypoint: ["dramatiq", "src.entrypoints.worker"]
+    entrypoint: ["python", "-m", "dramatiq", "src.entrypoints.worker"]
     command: ["--processes", "2", "--threads", "8"]
     deploy:
       resources:
