@@ -8,4 +8,4 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 RUN export PYTHONPATH="${PYTHONPATH}:/api/"
 RUN pip install -r requirements.txt
-RUN python -m compileall -q ./src/
+#RUN python -m compileall -q ./src/

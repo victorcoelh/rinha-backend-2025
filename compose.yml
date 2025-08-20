@@ -9,42 +9,28 @@ x-base-service: &fastapi-server
     - payment-processor
   expose:
     - "8000"
-  entrypoint: ["python", "-m", "granian", "--interface", "asgi", "src.entrypoints.server:app", "--host", "0.0.0.0"]
-  command: ["--workers", "1", "--runtime-threads", "1", "--loop", "uvloop"]
+  entrypoint: ["python", "-m", "granian", "--interface", "asgi", "src.server:app", "--host", "0.0.0.0"]
+  command: ["--workers", "1", "--loop", "uvloop"]
+  deploy:
+    resources:
+      limits:
+        cpus: "0.65"
+        memory: 150M
 
 services:
   web-server-1:
     <<: *fastapi-server
     container_name: fastapi-1
-    deploy:
-      resources:
-        limits:
-          cpus: "0.35"
-          memory: 80M
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://127.0.0.1:8000/health\")' || exit 1"]
+      interval: 1s
+      timeout: 1s
+      retries: 15
 
   web-server-2:
     <<: *fastapi-server
     container_name: fastapi-2
-    deploy:
-      resources:
-        limits:
-          cpus: "0.2"
-          memory: 80M
 
-  workers:
-    <<: *fastapi-server
-    container_name: workers
-    depends_on:
-      - redis
-      - web-server-1
-      - web-server-2
-    entrypoint: ["python", "-m", "dramatiq", "src.entrypoints.worker"]
-    command: ["--processes", "2", "--threads", "8"]
-    deploy:
-      resources:
-        limits:
-          cpus: "0.75"
-          memory: 115M
   nginx:
     image: nginx:latest
     container_name: nginx
@@ -68,7 +54,6 @@ services:
     image: redis:7.2-alpine
     command: >
       redis-server
-      --maxclients 500
       --save ""
       --tcp-backlog 511
       --appendonly no
@@ -82,7 +67,7 @@ services:
       resources:
         limits:
           cpus: "0.1"
-          memory: 50M
+          memory: 25M
 
 networks:
   default:

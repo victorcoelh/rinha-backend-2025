@@ -3,10 +3,11 @@ name = "rinha-backend"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "asyncio>=3.4.3",
-    "dramatiq[redis,watch]>=1.18.0",
+    "fastapi>=0.116.1",
+    "granian>=2.5.0",
     "httpx>=0.28.1",
     "orjson>=3.11.2",
     "redis[hiredis]>=6.2.0",
@@ -16,9 +17,3 @@ dependencies = [
 [tool.pyright]
 include = ["src/"]
 typeCheckingMode = "standard"
-
-[dependency-groups]
-server = [
-    "fastapi>=0.116.1",
-    "granian>=2.5.0",
-]
