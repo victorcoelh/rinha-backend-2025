@@ -21,6 +21,11 @@ services:
   web-server-1:
     <<: *fastapi-server
     container_name: fastapi-1
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://127.0.0.1:8000/health\")' || exit 1"]
+      interval: 1s
+      timeout: 1s
+      retries: 15
 
   web-server-2:
     <<: *fastapi-server

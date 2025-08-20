@@ -32,3 +32,7 @@ async def get_payments_summary(from_utc: str = Query(alias="from"),
 async def process_payment(request: Request) -> Response:
     await job_queue.put(await request.json())
     return Response(status_code=200)
+
+@app.get("/health")
+async def health_check() -> Response:
+    return Response(status_code=200)
